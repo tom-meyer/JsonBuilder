@@ -37,6 +37,16 @@ public class JsonBuilderTest {
   }
 
   @Test
+  public void implicitArrayOfStrings() {
+    assertEquals("[\"one\",\"two\",\"three\"]", J.value("one", "two", "three").toString());
+  }
+
+  @Test
+  public void implicitArrayOfNumbers() {
+    assertEquals("[1,1,2,3,5]", J.value(1, 1, 2, 3, 5).toString());
+  }
+
+  @Test
   public void array() {
     assertEquals("[\"three\",3]", J.array(J.value("three"), J.value(3)).toString());
   }

@@ -22,6 +22,24 @@ public class JsonBuilder {
     return theNullValue;
   }
 
+  public JsonArray value(String value, String ... elements) {
+    String newElements[] = new String[elements.length+1];
+    newElements[0] = value;
+    for(int i = 0; i < elements.length; ++i) {
+      newElements[i+1] = elements[i];
+    }
+    return array(newElements);
+  }
+
+  public JsonArray value(int value, int ... elements) {
+    int newElements[] = new int[elements.length+1];
+    newElements[0] = value;
+    for(int i = 0; i < elements.length; ++i) {
+      newElements[i+1] = elements[i];
+    }
+    return array(newElements);
+  }
+
   public JsonArray array(String ... elements) {
     java.util.ArrayList<JsonValue> values = new java.util.ArrayList<JsonValue>();
     for(String element : elements) {
