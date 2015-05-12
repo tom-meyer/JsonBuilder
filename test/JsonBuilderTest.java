@@ -74,4 +74,25 @@ public class JsonBuilderTest {
     Object value = J.pair("numbers", J.array("1", "2"));
     assertEquals("{\"numbers\":[\"1\",\"2\"]}", value.toString());
   }
+
+  @Test
+  public void simpleVariableSubstitution() {
+    Object value = J.var("$NAME").replace("$NAME", J.value("Tom"));
+    assertEquals("\"Tom\"", value.toString());
+  }
+
+  @Test
+  public void nestedVariableSubstitution() {
+    Object value = J.array(J.var("$NAME")).replace("$NAME", J.value("Tom"));
+    assertEquals("[\"Tom\"]", value.toString());
+  }
+
+  @Test
+  public void multipleVariableSubstitution() {
+    Object value = J
+      .pair("name", J.var("$NAME"))
+      .pair("names", J.array(J.var("$NAME"), J.value("Thomas")))
+      .replace("$NAME", J.value("Tom"));
+    assertEquals("{\"names\":[\"Tom\",\"Thomas\"],\"name\":\"Tom\"}", value.toString());
+  }
 }

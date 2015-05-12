@@ -2,23 +2,23 @@ public class JsonBuilder {
 
   public static JsonValue theNullValue = new JsonToken("null");
 
-  public JsonValue value(String value) {
+  public static JsonValue value(String value) {
     return value == null ? theNullValue : new JsonString(value);
   }
 
-  public JsonValue value(boolean value) {
+  public static JsonValue value(boolean value) {
     return new JsonToken(value ? "true" : "false");
   }
 
-  public JsonValue value(int value) {
+  public static JsonValue value(int value) {
     return new JsonToken(Integer.toString(value));
   }
 
-  public JsonValue number(String value) {
+  public static JsonValue number(String value) {
     return value == null ? theNullValue : new JsonToken(value);
   }
 
-  public JsonValue nullValue() {
+  public static JsonValue nullValue() {
     return theNullValue;
   }
 
@@ -56,25 +56,75 @@ public class JsonBuilder {
     return new JsonArray(values.toArray(new JsonValue[0]));
   }
 
-  public JsonArray array(JsonValue ... elements) {
+  public static JsonArray array(JsonValue ... elements) {
     return new JsonArray(elements);
   }
 
-  public JsonObject pair(String name, String value) {
-    return new JsonObject(name, value);
+  public static JsonObject pair(String name, int value) {
+    return new JsonObject().pair(name, value);
   }
 
-  public JsonObject pair(String name, JsonValue value) {
-    return new JsonObject(name, value);
+  public static JsonObject pair(String name, String value) {
+    return new JsonObject().pair(name, value);
   }
 
-  public static interface JsonValue { }
+  public static JsonObject pair(String name, JsonValue value) {
+    return new JsonObject().pair(name, value);
+  }
+
+  public static JsonVariable var(String name) {
+    return new JsonVariable(name);
+  }
+
+  //////////////////////////////////////////////////
+
+  public interface JsonValue {
+    JsonValue replace(String name, int value);
+    JsonValue replace(String name, String value);
+    JsonValue replace(String name, JsonValue value);
+  }
+
+  public static class JsonVariable implements JsonValue {
+    String name;
+
+    public JsonVariable(String name) {
+      this.name = name;
+    }
+
+    public JsonValue replace(String name, int value) {
+      return this.replace(name, JsonBuilder.value(value));
+    }
+
+    public JsonValue replace(String name, String value) {
+      return this.replace(name, JsonBuilder.value(value));
+    }
+
+    public JsonValue replace(String name, JsonValue value) {
+      return this.name.equals(name) ? value : this;
+    }
+
+    public String toString() {
+      return theNullValue.toString();
+    }
+  }
 
   public static class JsonToken implements JsonValue {
     String value;
 
     public JsonToken(String value) {
       this.value = value;
+    }
+
+    public JsonValue replace(String name, int value) {
+      return this.replace(name, JsonBuilder.value(value));
+    }
+
+    public JsonValue replace(String name, String value) {
+      return this.replace(name, JsonBuilder.value(value));
+    }
+
+    public JsonValue replace(String name, JsonValue value) {
+      return this;
     }
 
     public String toString() {
@@ -89,6 +139,18 @@ public class JsonBuilder {
       this.value = value;
     }
 
+    public JsonValue replace(String name, int value) {
+      return this.replace(name, JsonBuilder.value(value));
+    }
+
+    public JsonValue replace(String name, String value) {
+      return this.replace(name, JsonBuilder.value(value));
+    }
+
+    public JsonValue replace(String name, JsonValue value) {
+      return this;
+    }
+
     public String toString() {
       return String.format("\"%s\"", value.replaceAll("\"", "\\\\\""));
     }
@@ -99,6 +161,23 @@ public class JsonBuilder {
 
     public JsonArray(JsonValue ... elements) {
       this.elements = elements;
+    }
+
+    public JsonValue replace(String name, int value) {
+      return this.replace(name, JsonBuilder.value(value));
+    }
+
+    public JsonValue replace(String name, String value) {
+      return this.replace(name, JsonBuilder.value(value));
+    }
+
+    public JsonValue replace(String name, JsonValue value) {
+      JsonValue newElements[] = new JsonValue[elements.length];
+      int i = 0;
+      for(JsonValue element : elements) {
+        newElements[i++] = element.replace(name, value);
+      }
+      return new JsonArray(newElements);
     }
 
     public String toString() {
@@ -118,14 +197,8 @@ public class JsonBuilder {
   public static class JsonObject implements JsonValue {
     java.util.Map<String,JsonValue> pairs;
 
-    public JsonObject(String name, JsonValue value) {
+    public JsonObject() {
       pairs = new java.util.HashMap<String,JsonValue>();
-      pairs.put(name, value);
-    }
-
-    public JsonObject(String name, String value) {
-      pairs = new java.util.HashMap<String,JsonValue>();
-      pairs.put(name, new JsonString(value));
     }
 
     public JsonObject pair(String name, JsonValue value) {
@@ -134,8 +207,27 @@ public class JsonBuilder {
     }
 
     public JsonObject pair(String name, String value) {
-      pairs.put(name, new JsonString(value));
-      return this;
+      return this.pair(name, JsonBuilder.value(value));
+    }
+
+    public JsonObject pair(String name, int value) {
+      return this.pair(name, JsonBuilder.value(value));
+    }
+
+    public JsonValue replace(String name, int value) {
+      return this.replace(name, JsonBuilder.value(value));
+    }
+
+    public JsonValue replace(String name, String value) {
+      return this.replace(name, JsonBuilder.value(value));
+    }
+
+    public JsonValue replace(String varName, JsonValue value) {
+      JsonObject newObject = new JsonObject();
+      for(String name : pairs.keySet()) {
+        newObject.pair(name, pairs.get(name).replace(varName, value));
+      }
+      return newObject;
     }
 
     public String toString() {
